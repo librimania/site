@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пульт · моя коллекция сайтов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1420;
+    --panel:#161d2e;
+    --panel-2:#1c2439;
+    --grid-line:rgba(255,255,255,0.045);
+    --ink:#e8ecf5;
+    --muted:#8a93a8;
+    --accent:#5eead4;
+    --accent-dim:rgba(94,234,212,0.14);
+    --amber:#f4c95d;
+    --danger:#f2718b;
+    --radius:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/40px 40px,
+      var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    min-height:100vh;
+  }
+
+  a{color:inherit;}
+
+  .display{font-family:'Space Grotesk', sans-serif;}
+
+  header.hero{
+    padding:64px 32px 40px;
+    max-width:1080px;
+    margin:0 auto;
+    border-bottom:1px solid var(--grid-line);
+  }
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px;height:7px;border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 4px var(--accent-dim);
+  }
+  h1.display{
+    font-size:clamp(32px, 5vw, 52px);
+    font-weight:700;
+    line-height:1.05;
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  h1.display span{color:var(--accent);}
+  .hero p{
+    color:var(--muted);
+    font-size:15px;
+    max-width:560px;
+    line-height:1.6;
+    margin:0 0 26px;
+  }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  #search{
+    flex:1;
+    min-width:200px;
+    background:var(--panel);
+    border:1px solid var(--grid-line);
+    border-radius:var(--radius);
+    padding:11px 14px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    outline:none;
+  }
+  #search:focus{border-color:var(--accent);}
+  #search::placeholder{color:var(--muted);}
+  .count-pill{
+    font-size:12px;
+    color:var(--muted);
+    border:1px solid var(--grid-line);
+    padding:10px 14px;
+    border-radius:var(--radius);
+    white-space:nowrap;
+  }
+  .count-pill b{color:var(--accent);font-weight:600;}
+
+  main{
+    max-width:1080px;
+    margin:0 auto;
+    padding:36px 32px 20px;
+  }
+
+  #grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(270px, 1fr));
+    gap:16px;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--grid-line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    text-decoration:none;
+    color:var(--ink);
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    position:relative;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:var(--accent);
+    box-shadow:0 12px 30px -12px rgba(94,234,212,0.25);
+  }
+  .card-bar{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:10px 14px;
+    background:var(--panel-2);
+    border-bottom:1px solid var(--grid-line);
+    font-size:11px;
+    color:var(--muted);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--grid-line);}
+  .card-bar .path{margin-left:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .card-body{padding:18px 16px 20px;flex:1;display:flex;flex-direction:column;gap:8px;}
+  .card-body h3{
+    margin:0;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:18px;
+    font-weight:600;
+  }
+  .card-body p{
+    margin:0;
+    font-size:12.5px;
+    color:var(--muted);
+    line-height:1.55;
+    flex:1;
+  }
+  .tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .tag{
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--amber);
+    background:rgba(244,201,93,0.1);
+    border:1px solid rgba(244,201,93,0.25);
+    padding:3px 8px;
+    border-radius:100px;
+  }
+  .open-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+    font-size:12px;
+    color:var(--accent);
+  }
+
+  .empty{
+    grid-column:1/-1;
+    text-align:center;
+    padding:60px 20px;
+    color:var(--muted);
+    font-size:13px;
+    border:1px dashed var(--grid-line);
+    border-radius:var(--radius);
+  }
+
+  section.howto{
+    max-width:1080px;
+    margin:50px auto 80px;
+    padding:0 32px;
+  }
+  section.howto h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:20px;
+    margin:0 0 6px;
+  }
+  section.howto > p{
+    color:var(--muted);
+    font-size:13px;
+    margin:0 0 20px;
+    max-width:640px;
+    line-height:1.6;
+  }
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px,1fr));
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .step{
+    background:var(--panel);
+    border:1px solid var(--grid-line);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+  .step .n{color:var(--accent);font-size:11px;letter-spacing:.08em;}
+  .step h4{margin:8px 0 6px;font-family:'Space Grotesk',sans-serif;font-size:14.5px;}
+  .step p{margin:0;color:var(--muted);font-size:12px;line-height:1.55;}
+
+  pre{
+    background:#0b0f19;
+    border:1px solid var(--grid-line);
+    border-radius:var(--radius);
+    padding:18px;
+    overflow-x:auto;
+    font-size:12.5px;
+    line-height:1.7;
+    color:#c9d3e6;
+    position:relative;
+  }
+  pre .k{color:var(--accent);}
+  pre .s{color:var(--amber);}
+  pre .c{color:var(--muted);}
+
+  .copy-btn{
+    position:absolute;
+    top:10px;right:10px;
+    background:var(--panel-2);
+    border:1px solid var(--grid-line);
+    color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{color:var(--accent);border-color:var(--accent);}
+
+  footer{
+    text-align:center;
+    padding:26px;
+    color:var(--muted);
+    font-size:11.5px;
+    border-top:1px solid var(--grid-line);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">панель запущена</div>
+  <h1 class="display">Твой пульт для <span>html‑сайтов</span></h1>
+  <p>Одна страница, с которой открываются все твои проекты. Список ниже — это просто массив в коде: допишешь новую запись — появится новая карточка.</p>
+
+  <div class="controls">
+    <input id="search" type="text" placeholder="Найти сайт по названию или тегу…">
+    <div class="count-pill"><b id="count">0</b> сайтов в коллекции</div>
+  </div>
+</header>
+
+<main>
+  <div id="grid"></div>
+</main>
+
+<section class="howto" id="howto">
+  <h2 class="display">Как добавить ещё один сайт</h2>
+  <p>Файлы можно хранить рядом с этой страницей — например в папке <code>sites/</code>. Дальше просто вписываешь сайт в список ниже.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="n">01</div>
+      <h4>Положи файл рядом</h4>
+      <p>Например: <code>sites/portfolio.html</code> в той же папке, что и этот index.html.</p>
+    </div>
+    <div class="step">
+      <div class="n">02</div>
+      <h4>Открой index.html в редакторе</h4>
+      <p>Найди массив <code>SITES</code> внизу файла — прямо перед закрывающим тегом <code>&lt;/script&gt;</code>.</p>
+    </div>
+    <div class="step">
+      <div class="n">03</div>
+      <h4>Добавь строку и сохрани</h4>
+      <p>Карточка появится автоматически при открытии страницы — писать HTML руками не нужно.</p>
+    </div>
+  </div>
+
+  <pre id="snippet"><span class="c">// внутри массива SITES добавь объект такого вида:</span>
+{
+  <span class="k">name</span>: <span class="s">"Название сайта"</span>,
+  <span class="k">description</span>: <span class="s">"Коротко, о чём этот сайт"</span>,
+  <span class="k">url</span>: <span class="s">"sites/moy-sayt.html"</span>,
+  <span class="k">tags</span>: [<span class="s">"проект"</span>]
+}</pre>
+  <button class="copy-btn" onclick="copySnippet()" style="position:static;margin-top:8px;">Скопировать шаблон</button>
+</section>
+
+<footer>сделано на чистом HTML · открывай в любом браузере · хостится где угодно</footer>
+
+<script>
+  // ─────────────────────────────────────────────────────────────
+  // СПИСОК ТВОИХ САЙТОВ — добавляй сюда новые записи
+  // url — путь к html-файлу (относительный, если он лежит рядом,
+  // или полный https://..., если сайт размещён отдельно)
+  // ─────────────────────────────────────────────────────────────
+  const SITES = [
+    {
+      name: "Пример сайта",
+      description: "Это заглушка — замени на свой первый сайт, отредактировав массив SITES внизу index.html.",
+      url: "sites/example.html",
+      tags: ["пример"]
+    }
+  ];
+
+  const grid = document.getElementById('grid');
+  const search = document.getElementById('search');
+  const countEl = document.getElementById('count');
+
+  function render(list){
+    grid.innerHTML = "";
+    countEl.textContent = SITES.length;
+
+    if(list.length === 0){
+      grid.innerHTML = '<div class="empty">Ничего не найдено. Попробуй другой запрос — или добавь новый сайт в SITES.</div>';
+      return;
+    }
+
+    list.forEach(site => {
+      const card = document.createElement('a');
+      card.className = 'card';
+      card.href = site.url;
+      card.target = '_self';
+
+      const tags = (site.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+
+      card.innerHTML = `
+        <div class="card-bar">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="path">${site.url}</span>
+        </div>
+        <div class="card-body">
+          <h3>${site.name}</h3>
+          <p>${site.description || ""}</p>
+          <div class="tag-row">${tags}</div>
+          <div class="open-row"><span>открыть →</span></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    const filtered = SITES.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      (s.description || "").toLowerCase().includes(q) ||
+      (s.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+    render(filtered);
+  });
+
+  function copySnippet(){
+    const text = `{\n  name: "Название сайта",\n  description: "Коротко, о чём этот сайт",\n  url: "sites/moy-sayt.html",\n  tags: ["проект"]\n}`;
+    navigator.clipboard.writeText(text);
+    const btn = document.querySelector('.copy-btn');
+    const old = btn.textContent;
+    btn.textContent = "Скопировано ✓";
+    setTimeout(() => btn.textContent = old, 1500);
+  }
+
+  render(SITES);
+</script>
+
+</body>
+</html>
