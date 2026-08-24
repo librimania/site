@@ -1,0 +1,1 @@
+import {redirect} from "next/navigation";export default async function Page({searchParams}:{searchParams:Promise<{teacher?:string}>}){const p=await searchParams;redirect(`/workbooks/present-simple-travel/read${p.teacher==="1"?"?teacher=1":""}`)}

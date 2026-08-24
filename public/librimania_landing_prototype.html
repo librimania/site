@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>librimania — writing practice for the exam you're actually taking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Roboto+Condensed:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest: #0B5D46;
+    --forest-deep: #08402F;
+    --mint: #E5F3ED;
+    --coral: #D97B4F;
+    --cream: #F7F3EC;
+    --ink: #1F2A24;
+
+    --plum: #2B1B33;
+    --plum-deep: #1B0F21;
+    --pumpkin: #E8722C;
+    --pumpkin-cream: #F5E3CF;
+    --harlequin: #A8324A;
+
+    --wood: #6b4a2c;
+    --wood-deep: #4a3018;
+
+    --display: "Fraunces", Georgia, serif;
+    --body: "Roboto Condensed", Arial, sans-serif;
+    --mono: "Space Mono", monospace;
+
+    --radius: 6px;
+    --edge: 1px solid rgba(31,42,36,0.12);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ font-family: var(--body); color: var(--ink); background: var(--cream); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a{ color:inherit; }
+  .wrap{ max-width: 1180px; margin:0 auto; padding: 0 32px; }
+  h1,h2,h3{ font-family: var(--display); font-weight:600; letter-spacing:-0.01em; }
+  .eyebrow{ font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.75; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; font-family: var(--body); font-weight:600; font-size:15px; padding: 12px 22px; border-radius: var(--radius); border: 1px solid transparent; cursor:pointer; text-decoration:none; transition: transform .15s ease, background .15s ease, border-color .15s ease; }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn-coral{ background: var(--coral); color: var(--cream); }
+  .btn-coral:hover{ background:#c76a3f; }
+  .btn-ghost{ background:transparent; color: var(--cream); border-color: rgba(247,243,236,0.4); }
+  .btn-ghost:hover{ border-color: rgba(247,243,236,0.9); }
+
+  header{ position: sticky; top:0; z-index:50; background: var(--forest-deep); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .nav{ display:flex; align-items:center; justify-content:space-between; padding: 18px 32px; }
+  .logo{ font-family: var(--display); font-size: 21px; font-weight:700; color: var(--mint); letter-spacing: -0.01em; }
+  .logo span{ color: var(--coral); }
+  .nav-links{ display:flex; gap:28px; align-items:center; font-size:14px; color: rgba(229,243,237,0.85); }
+  .nav-links a{ text-decoration:none; }
+  .nav-links a:hover{ color: var(--mint); }
+  .nav-cta{ display:flex; gap:12px; }
+  .access-status{ display:none; align-items:center; gap:9px; color:var(--mint); font-size:13px; }
+  .access-status.active{ display:flex; }
+  .access-badge{ font:10px var(--mono); letter-spacing:.05em; text-transform:uppercase; padding:4px 8px; border-radius:20px; background:rgba(229,243,237,.14); }
+  .logout-btn{ border:0; background:none; color:rgba(229,243,237,.7); cursor:pointer; text-decoration:underline; font:12px var(--body); }
+  .dashboard-link{ display:none; color:var(--cream); border:1px solid rgba(229,243,237,.3); border-radius:5px; padding:6px 10px; font:12px var(--body); text-decoration:none; }
+  .dashboard-link.active{ display:inline-flex; }
+  .menu-toggle{ display:none; background:none; border:1px solid rgba(247,243,236,.35); color:var(--cream); border-radius:6px; padding:8px 10px; font-size:18px; cursor:pointer; }
+  .library-tools{ display:grid; grid-template-columns:minmax(220px,1fr) auto; gap:16px; align-items:center; margin:-24px 0 28px; }
+  .search-box{ width:100%; border:1px solid rgba(31,42,36,.2); background:#fff; border-radius:var(--radius); padding:12px 15px; font:15px var(--body); color:var(--ink); outline:none; }
+  .search-box:focus{ border-color:var(--forest); box-shadow:0 0 0 3px rgba(11,93,70,.1); }
+  .filter-row{ display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
+  .filter-btn{ border:1px solid rgba(31,42,36,.2); background:transparent; border-radius:20px; padding:7px 12px; font:12px var(--mono); cursor:pointer; color:var(--ink); }
+  .filter-btn.active{ background:var(--forest); border-color:var(--forest); color:#fff; }
+  .library-status{ grid-column:1/-1; font:12px var(--mono); opacity:.65; min-height:18px; }
+  .library-item.is-hidden{ display:none; }
+  .favorite-toggle{ width:100%; justify-content:center; margin-top:10px; background:transparent; border-color:rgba(31,42,36,.25); color:var(--forest); }
+  .favorite-toggle.active{ background:var(--mint); border-color:var(--forest); }
+  .auth-overlay{ position:fixed; inset:0; z-index:300; background:rgba(31,42,36,.62); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:22px; opacity:0; pointer-events:none; transition:.2s; }
+  .auth-overlay.active{ opacity:1; pointer-events:auto; }
+  .auth-modal{ width:min(420px,100%); background:var(--cream); border-radius:10px; padding:30px; box-shadow:0 30px 80px rgba(0,0,0,.4); transform:translateY(12px); transition:.2s; position:relative; }
+  .auth-overlay.active .auth-modal{ transform:none; }
+  .auth-modal h2{ font-size:28px; margin-bottom:6px; }
+  .auth-subtitle{ opacity:.7; margin-bottom:22px; }
+  .auth-form{ display:grid; gap:14px; }
+  .role-picker{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .role-option{ position:relative; cursor:pointer; }
+  .role-option input{ position:absolute; opacity:0; pointer-events:none; }
+  .role-card{ display:block; height:100%; border:1px solid rgba(31,42,36,.2); background:#fff; border-radius:7px; padding:12px; transition:.15s; }
+  .role-card strong{ display:block; margin-bottom:3px; }
+  .role-card small{ display:block; opacity:.65; line-height:1.3; }
+  .role-option input:checked + .role-card{ border-color:var(--forest); background:var(--mint); box-shadow:0 0 0 2px rgba(11,93,70,.1); }
+  .student-code-field{ display:none; }
+  .student-code-field.visible{ display:grid; }
+  .guest-divider{ display:flex; align-items:center; gap:10px; font-size:12px; opacity:.55; }
+  .guest-divider::before,.guest-divider::after{ content:""; height:1px; background:rgba(31,42,36,.2); flex:1; }
+  .guest-btn{ justify-content:center; background:transparent; border-color:rgba(31,42,36,.25); color:var(--forest); }
+  .access-note{ background:var(--mint); border-radius:6px; padding:10px 12px; font-size:13px; color:var(--forest-deep); margin-bottom:14px; }
+  .book-content > a.btn-coral{ display:none; }
+  .auth-field{ display:grid; gap:5px; font-size:13px; font-weight:600; }
+  .auth-field input{ border:1px solid rgba(31,42,36,.22); border-radius:6px; padding:11px 12px; font:15px var(--body); background:#fff; }
+  .auth-field input:focus{ outline:2px solid rgba(11,93,70,.2); border-color:var(--forest); }
+  .auth-message{ min-height:20px; font-size:13px; color:var(--harlequin); }
+  .auth-message.success{ color:var(--forest); }
+  .auth-close{ position:absolute; top:14px; right:14px; background:none; border:0; font-size:22px; cursor:pointer; }
+  .guest-contact-section{ background:var(--mint); padding:54px 0; }
+  .guest-contact-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:24px; }
+  .guest-contact-card{ background:#fff; border:var(--edge); border-radius:8px; padding:24px; }
+  .guest-contact-card h3{ font-size:21px; margin-bottom:8px; }
+  .guest-contact-card p{ opacity:.7; margin-bottom:18px; }
+  .contact-overlay{ position:fixed; inset:0; z-index:310; display:flex; align-items:center; justify-content:center; padding:22px; background:rgba(31,42,36,.65); opacity:0; pointer-events:none; transition:.2s; }
+  .contact-overlay.active{ opacity:1; pointer-events:auto; }
+  .contact-modal{ width:min(460px,100%); background:var(--cream); border-radius:10px; padding:30px; position:relative; box-shadow:0 30px 80px rgba(0,0,0,.4); }
+  .contact-modal h2{ font-size:27px; margin-bottom:6px; }
+  .contact-modal p{ opacity:.7; margin-bottom:20px; }
+
+  /* ============ HERO (text only — the shelf lives below now) ============ */
+  .hero{
+    background: radial-gradient(120% 140% at 15% -10%, #0E6E52 0%, var(--forest-deep) 55%, var(--plum-deep) 130%);
+    color: var(--cream);
+    padding: 88px 0 100px;
+  }
+  .hero-grid{ display:block; max-width: 720px; }
+  .hero-copy .eyebrow{ color: var(--coral); }
+  .hero h1{ font-size: clamp(34px, 4.4vw, 54px); line-height: 1.08; margin: 18px 0 20px; max-width: 14ch; }
+  .hero h1 em{ font-style:italic; color: var(--coral); }
+  .hero p{ font-size: 17px; color: rgba(247,243,236,0.82); max-width: 46ch; margin-bottom: 30px; }
+  .hero-actions{ display:flex; gap:14px; flex-wrap:wrap; }
+
+  .hero-preview{ background: var(--cream); color: var(--ink); border-radius: 10px; padding: 22px; box-shadow: 0 30px 60px rgba(0,0,0,0.35); }
+  .hero-preview .pv-head{ display:flex; justify-content:space-between; align-items:center; font-family: var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.6; margin-bottom:14px; }
+  .hero-preview p{ color: var(--ink); font-size: 14.5px; margin-bottom: 14px; }
+  .err{ background: rgba(217,123,79,0.22); border-bottom: 2px solid var(--coral); padding: 0 2px; }
+  .ok{ background: rgba(11,93,70,0.14); border-bottom: 2px solid var(--forest); padding: 0 2px; }
+  .pv-score{ display:flex; align-items:center; justify-content:space-between; border-top: var(--edge); padding-top: 14px; font-family: var(--mono); font-size: 13px; }
+  .pv-score b{ font-family: var(--display); font-size: 20px; color: var(--forest); }
+
+  .hero-preview .pv-score{ display:flex; align-items:center; justify-content:space-between; border-top: var(--edge); padding-top: 14px; font-family: var(--mono); font-size: 13px; }
+  .hero-preview .pv-score b{ font-family: var(--display); font-size: 20px; color: var(--forest); }
+
+  /* ============ ORIENTATION STRIP — quick overview of the whole site ============ */
+  .orient{ background: var(--forest-deep); padding: 0 0 72px; }
+  .orient-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .orient-card{
+    background: rgba(247,243,236,0.06);
+    border: 1px solid rgba(247,243,236,0.14);
+    border-radius: 8px;
+    padding: 22px 22px 24px;
+    color: var(--cream);
+  }
+  .orient-card .oc-label{ font-family: var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.55; margin-bottom:12px; }
+  .orient-card h4{ font-family: var(--display); font-size: 19px; font-weight:600; margin-bottom:10px; }
+  .orient-card p{ font-size: 13.5px; opacity:0.75; line-height:1.5; }
+
+  .world-dots{ display:flex; gap:8px; margin-bottom:14px; }
+  .world-dot{ width:10px; height:10px; border-radius:50%; }
+
+  .format-list{ list-style:none; font-size: 13.5px; }
+  .format-list li{ display:flex; align-items:center; gap:8px; padding: 6px 0; opacity:0.85; }
+  .format-list li::before{ content:""; width:5px; height:5px; border-radius:50%; background: var(--coral); flex:0 0 auto; }
+
+  .exam-chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:2px; }
+  .exam-chip{
+    font-family: var(--mono); font-size: 11px; letter-spacing:0.03em;
+    border: 1px solid rgba(247,243,236,0.3); border-radius: 20px;
+    padding: 5px 12px; opacity:0.9;
+  }
+
+  section{ padding: 96px 0; }
+  .how-head{ max-width: 640px; margin: 0 auto 56px; text-align:center; }
+  .how-head.left{ margin: 0 0 48px; text-align:left; }
+  .how-head .eyebrow{ color: var(--coral); }
+  .how-head h2{ font-size: clamp(26px,3vw,38px); margin-top:10px; }
+
+  /* ============ THE BOOKCASE — single site-wide navigation panel ============ */
+  .bookcase-section{ background: var(--cream); }
+
+  .cabinet{ position:relative; perspective: 2600px; }
+  .cabinet-open-cta{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family: var(--mono); font-size: 12px; letter-spacing:0.06em; text-transform:uppercase;
+    color: var(--forest); background:none; border: 1px solid rgba(31,42,36,0.25);
+    border-radius: 20px; padding: 8px 16px; cursor:pointer; margin-bottom: 22px;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .cabinet-open-cta:hover{ border-color: var(--forest); background: rgba(11,93,70,0.06); }
+
+  .cabinet-door{
+    position:absolute; top:16px; bottom:16px; width: calc(50% - 16px);
+    background: linear-gradient(160deg, var(--wood), var(--wood-deep) 85%);
+    padding: 14px;
+    z-index: 5;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 10px 20px rgba(0,0,0,0.25);
+    cursor: pointer;
+    transition: transform .8s cubic-bezier(.65,0,.35,1);
+    transform-style: preserve-3d;
+  }
+  .door-glass{
+    position:absolute; inset:14px;
+    background: linear-gradient(155deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.04));
+    backdrop-filter: blur(0.6px) saturate(1.02) brightness(1.01);
+    -webkit-backdrop-filter: blur(0.6px) saturate(1.02) brightness(1.01);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), inset 0 0 20px rgba(0,0,0,0.1);
+    overflow:hidden;
+  }
+  .door-glass::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(var(--wood-deep), var(--wood-deep)),
+      linear-gradient(var(--wood-deep), var(--wood-deep));
+    background-repeat:no-repeat, no-repeat;
+    background-size: 100% 3px, 3px 100%;
+    background-position: 0 50%, 50% 0;
+    opacity:0.55;
+  }
+  .door-glass::after{
+    content:"";
+    position:absolute; top:-45%; left:-25%; width:55%; height:190%;
+    background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.16) 50%, transparent 58%);
+    transform: rotate(9deg);
+  }
+  .door-left{ left:16px; border-radius: 6px 0 0 6px; transform-origin: left center; }
+  .door-right{ right:16px; border-radius: 0 6px 6px 0; transform-origin: right center; }
+  .door-handle{
+    position:absolute; top:50%; width:6px; height:64px; border-radius:4px;
+    background: linear-gradient(180deg, #e8c98f, #b98f4f);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transform: translateY(-50%);
+  }
+  .door-left .door-handle{ right: 22px; }
+  .door-right .door-handle{ left: 22px; }
+
+  .cabinet.is-open .door-left{ transform: rotateY(-112deg); }
+  .cabinet.is-open .door-right{ transform: rotateY(112deg); }
+  .cabinet.is-open .cabinet-door{ pointer-events:none; }
+
+  .cabinet-hint{
+    position:absolute; bottom:26px; left:0; right:0; z-index:6;
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    color: rgba(247,243,236,0.55); pointer-events:none;
+    opacity:1; transition: opacity .3s ease;
+  }
+  .cabinet.is-open .cabinet-hint{ opacity:0; }
+
+  /* posters taped to the closed doors */
+  .door-poster{
+    position:absolute;
+    background: rgba(247,243,236,0.94);
+    color: var(--ink);
+    padding: 16px 17px 18px;
+    box-shadow: 0 12px 22px rgba(0,0,0,0.3), 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 3;
+  }
+  .door-poster::before{
+    content:"";
+    position:absolute; top:-9px; left:50%; transform:translateX(-50%) rotate(-3deg);
+    width:54px; height:18px;
+    background: rgba(247,231,180,0.55);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .cabinet.is-open .door-poster{ opacity:0; transition: opacity .25s ease; }
+
+  .poster-label{ font-family: var(--mono); font-size:10px; letter-spacing:0.07em; text-transform:uppercase; opacity:0.55; margin-bottom:9px; }
+  .poster-title{ font-family: var(--display); font-weight:600; font-size:16px; line-height:1.22; margin-bottom:8px; }
+  .poster-dots{ display:flex; gap:6px; margin-bottom:10px; }
+  .poster-dot{ width:8px; height:8px; border-radius:50%; }
+  .poster-text{ font-size:12px; line-height:1.5; opacity:0.8; }
+
+  .poster-list{ list-style:none; font-size:12px; }
+  .poster-list li{ display:flex; align-items:center; gap:7px; padding: 4px 0; opacity:0.85; }
+  .poster-list li::before{ content:""; width:4px; height:4px; border-radius:50%; background: var(--coral); flex:0 0 auto; }
+
+  .poster-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+  .poster-chip{
+    font-family: var(--mono); font-size: 9.5px; letter-spacing:0.02em;
+    border: 1px solid rgba(31,42,36,0.25); border-radius: 20px;
+    padding: 3px 9px; opacity:0.85;
+  }
+
+  .poster-worlds{
+    left: 8%; top: 14%; width: 68%;
+    transform: rotate(-2.5deg);
+  }
+  .poster-formats{
+    right: 6%; top: 8%; width: 62%;
+    transform: rotate(2deg);
+  }
+  .poster-exam{
+    right: 10%; bottom: 10%; width: 58%;
+    transform: rotate(-1.5deg);
+  }
+
+  .bookcase-frame{
+    background: linear-gradient(180deg, var(--wood), var(--wood-deep));
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 30px 60px rgba(31,42,36,0.25), inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .bookcase{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .cubby{
+    background: var(--ink);
+    border-radius: 4px;
+    padding: 22px 20px 0;
+    display:flex;
+    flex-direction:column;
+    min-height: 260px;
+  }
+  .cubby.cubby-light{ background: var(--mint); }
+  .cubby-plaque{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 16px;
+  }
+  .cubby-plaque h3{ font-size: 19px; color: var(--cream); }
+  .cubby.cubby-light .cubby-plaque h3{ color: var(--ink); }
+  .cubby-plaque .cc{ font-family: var(--mono); font-size: 11px; color: rgba(247,243,236,0.5); }
+  .cubby.cubby-light .cubby-plaque .cc{ color: rgba(31,42,36,0.5); }
+
+  .cubby-spines{
+    display:flex; flex-wrap:wrap; align-items:flex-end; gap:10px;
+    flex:1;
+    padding: 0 4px 14px;
+    border-bottom: 6px solid var(--wood-deep);
+  }
+  .spine{
+    --spine-color: var(--forest);
+    position:relative;
+    width: 56px;
+    height: 168px;
+    background: var(--spine-color);
+    border-radius: 3px 3px 0 0;
+    box-shadow: inset -5px 0 10px rgba(0,0,0,0.18), 0 8px 14px rgba(0,0,0,0.25);
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding-top: 14px;
+    text-decoration:none; cursor:pointer;
+    transition: transform .2s cubic-bezier(.2,.8,.3,1.2), box-shadow .2s ease;
+    flex: 0 0 auto;
+  }
+  .spine:hover{ transform: translateY(-14px) rotate(-1.5deg); box-shadow: 0 18px 26px rgba(0,0,0,0.35); }
+  .spine::after{
+    content:""; position:absolute; left:7px; right:7px; top:34px; bottom:32px;
+    border-top: 1px solid rgba(255,255,255,0.22); border-bottom: 1px solid rgba(255,255,255,0.22);
+  }
+  .spine .spine-label{
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font-family: var(--display); font-weight:600; font-size: 12.5px; color: var(--cream);
+    letter-spacing: 0.01em; line-height:1.15; margin-top:8px;
+  }
+  .spine .spine-level{
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font-family: var(--mono); font-size: 8px; color: rgba(247,243,236,0.6);
+    letter-spacing: 0.06em; margin-top:5px;
+  }
+  .spine .spine-badge{
+    position:absolute; top:6px; left:50%; transform:translateX(-50%);
+    font-family: var(--mono); font-size:7px; letter-spacing:0.04em;
+    background: var(--cream); color: var(--ink); padding: 2px 5px; border-radius:20px; white-space:nowrap;
+  }
+  .spine.tall{ height: 190px; }
+  .spine.short{ height: 142px; }
+
+  .cubby-foot{
+    font-size: 12.5px; color: rgba(247,243,236,0.55);
+    padding: 12px 4px 18px;
+  }
+  .cubby.cubby-light .cubby-foot{ color: rgba(31,42,36,0.6); }
+  .cubby-foot a{ color: var(--coral); font-weight:600; text-decoration:none; }
+  .cubby.cubby-light .cubby-foot a{ color: var(--forest); }
+
+  @media (max-width: 760px){
+    .bookcase{ grid-template-columns: 1fr; }
+  }
+
+  .cubby-wide{ grid-column: 1 / -1; }
+
+  /* game case with a visible disc */
+  .game-disc{
+    width: 30px; height: 30px; border-radius: 50%;
+    margin-top: 16px;
+    background: conic-gradient(from 200deg, var(--spine-color), rgba(255,255,255,0.6) 10%, var(--spine-color) 22%, rgba(255,255,255,0.32) 36%, var(--spine-color) 55%, rgba(255,255,255,0.42) 70%, var(--spine-color) 88%);
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.2), 0 3px 6px rgba(0,0,0,0.28);
+    position:relative;
+    flex: 0 0 auto;
+  }
+  .game-disc::after{
+    content:""; position:absolute; width:7px; height:7px; border-radius:50%;
+    background: var(--ink); top:50%; left:50%; transform:translate(-50%,-50%);
+  }
+
+  /* index-card box lying on the shelf */
+  .card-box{
+    --spine-color: var(--coral);
+    width: 108px; height: 76px;
+    background: var(--spine-color);
+    border-radius: 3px 3px 2px 2px;
+    box-shadow: inset 0 -10px 0 rgba(0,0,0,0.16), 0 10px 16px rgba(0,0,0,0.3);
+    position:relative;
+    display:flex; align-items:flex-end; justify-content:center;
+    padding-bottom: 9px;
+    cursor:pointer; text-decoration:none;
+    flex: 0 0 auto;
+    transition: transform .2s cubic-bezier(.2,.8,.3,1.2), box-shadow .2s ease;
+  }
+  .card-box:hover{ transform: translateY(-10px) rotate(-1.5deg); box-shadow: 0 16px 24px rgba(0,0,0,0.38); }
+  .card-box::before{
+    content:"";
+    position:absolute; top:-7px; left:10px; right:10px; height:14px;
+    background: var(--cream);
+    border-radius: 2px 2px 0 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .card-box::after{
+    content:"";
+    position:absolute; top:-11px; left:16px; right:16px; height:14px;
+    background: var(--mint);
+    border-radius: 2px 2px 0 0;
+    opacity:0.9;
+  }
+  .card-box-label{
+    font-family: var(--mono); font-size:9px; letter-spacing:0.05em; text-transform:uppercase;
+    color: var(--cream); opacity:0.92; text-align:center;
+  }
+
+  /* ============ BOOK MODAL — click a spine to see it "open" ============ */
+  .book-overlay{
+    position:fixed; inset:0; z-index:200;
+    background: rgba(31,42,36,0.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display:flex; align-items:center; justify-content:center;
+    padding: 24px;
+    opacity:0; pointer-events:none;
+    transition: opacity .25s ease;
+  }
+  .book-overlay.active{ opacity:1; pointer-events:auto; }
+
+  .book-modal{
+    --book-color: var(--forest);
+    display:flex;
+    width: min(600px, 100%);
+    border-radius: 8px;
+    overflow:hidden;
+    box-shadow: 0 40px 90px rgba(0,0,0,0.45);
+    transform-origin: left center;
+    transform: scaleX(0.18) rotateY(-40deg);
+    opacity:0;
+    transition: transform .45s cubic-bezier(.22,.85,.3,1.1), opacity .3s ease;
+  }
+  .book-overlay.active .book-modal{ transform: scaleX(1) rotateY(0deg); opacity:1; }
+
+  .book-cover{
+    width: 36%;
+    background: var(--book-color);
+    color: var(--cream);
+    padding: 26px 20px;
+    display:flex; flex-direction:column; justify-content:flex-end;
+    position:relative;
+    min-height: 320px;
+  }
+  .book-cover-badge{
+    position:absolute; top:20px; left:20px;
+    font-family: var(--mono); font-size:10px; letter-spacing:0.05em;
+    background: rgba(247,243,236,0.16); padding:3px 9px; border-radius:20px;
+  }
+  .book-cover h3{ font-family: var(--display); font-size:22px; line-height:1.15; }
+
+  .book-content{ width: 64%; background: var(--cream); color: var(--ink); padding: 30px 28px; position:relative; }
+  .book-content .bc-level{ font-family: var(--mono); font-size:11px; letter-spacing:0.05em; opacity:0.55; margin-bottom:12px; display:block; }
+  .book-content p{ font-size:14.5px; line-height:1.55; opacity:0.85; margin-bottom:22px; }
+  .book-close{
+    position:absolute; top:14px; right:14px;
+    background:none; border:none; font-size:18px; line-height:1;
+    cursor:pointer; color: var(--ink); opacity:0.45;
+  }
+  .book-close:hover{ opacity:0.9; }
+
+  @media (max-width: 560px){
+    .book-modal{ flex-direction:column; }
+    .book-cover, .book-content{ width:100%; }
+    .book-cover{ min-height:140px; }
+  }
+
+  /* ============ HOW IT WORKS ============ */
+  .loop{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
+  .loop-step{ background: #fff; border: var(--edge); padding: 30px 26px; position: relative; }
+  .loop-step:not(:last-child){ border-right: none; }
+  .loop-step:first-child{ border-radius: var(--radius) 0 0 var(--radius); }
+  .loop-step:last-child{ border-radius: 0 var(--radius) var(--radius) 0; }
+  .loop-num{ font-family: var(--mono); font-size:12px; color: var(--coral); }
+  .loop-step h3{ font-size: 20px; margin: 10px 0 8px; }
+  .loop-step p{ font-size: 14px; opacity: 0.75; }
+  .loop-arrow{ position:absolute; top:50%; right:-13px; transform:translateY(-50%); width:26px; height:26px; background:var(--cream); border: var(--edge); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; color: var(--forest); z-index:2; }
+  .loop-step:last-child .loop-arrow{ display:none; }
+
+  /* ============ TWO WORLDS ============ */
+  .worlds{ background: var(--ink); }
+  .worlds .how-head{ color: var(--cream); }
+  .worlds .how-head .eyebrow{ color: var(--pumpkin); }
+  .world-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .world-card{ border-radius: 10px; padding: 36px 30px; position:relative; overflow:hidden; min-height: 300px; display:flex; flex-direction:column; justify-content:flex-end; }
+  .world-card .wc-tag{ font-family: var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom:10px; }
+  .world-card h3{ font-size: 27px; margin-bottom: 10px; }
+  .world-card p{ font-size:14.5px; max-width: 42ch; margin-bottom:18px; }
+  .world-card .wc-link{ font-family: var(--body); font-weight:600; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .world-card .wc-blob{ position:absolute; top:-60px; right:-60px; width:220px; height:220px; border-radius: 46% 54% 60% 40% / 50% 46% 54% 50%; opacity:0.5; }
+  .world-phil{ background: linear-gradient(160deg, var(--mint), #cfe8dc); color: var(--ink); }
+  .world-phil .wc-blob{ background: var(--coral); }
+  .world-phil .wc-tag{ color: var(--forest); opacity:0.9; }
+  .world-halva{ background: linear-gradient(160deg, var(--plum), #1f1226); color: var(--pumpkin-cream); }
+  .world-halva .wc-blob{ background: var(--harlequin); }
+  .world-halva .wc-tag{ color: var(--pumpkin); opacity:1; }
+
+  .cta-final{ background: linear-gradient(135deg, var(--forest-deep), var(--plum-deep)); color: var(--cream); text-align:center; padding: 100px 0; }
+  .cta-final h2{ font-size: clamp(28px,4vw,44px); max-width: 18ch; margin: 0 auto 18px; }
+  .cta-final p{ opacity:0.75; max-width: 46ch; margin: 0 auto 32px; }
+
+  footer{ background: var(--ink); color: rgba(247,243,236,0.55); padding: 40px 0; font-size:13px; }
+  .footer-row{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+
+  @media (max-width: 880px){
+    .hero-grid{ grid-template-columns: 1fr; }
+    .loop{ grid-template-columns: 1fr; }
+    .loop-step:not(:last-child){ border-right: var(--edge); border-bottom:none; }
+    .loop-step{ border-radius:0 !important; }
+    .loop-arrow{ top:auto; bottom:-13px; right:50%; transform:translate(50%,0) rotate(90deg); }
+    .world-grid{ grid-template-columns: 1fr; }
+    .nav{ position:relative; padding:14px 20px; }
+    .menu-toggle{ display:block; }
+    .nav-links{ display:none; position:absolute; top:100%; left:0; right:0; padding:18px 20px; background:var(--forest-deep); flex-direction:column; align-items:flex-start; border-top:1px solid rgba(255,255,255,.1); }
+    .nav-links.open{ display:flex; }
+    .nav-cta .btn-ghost{ display:none; }
+    .access-status span:not(.access-badge){ display:none; }
+    .library-tools{ grid-template-columns:1fr; }
+    .filter-row{ justify-content:flex-start; }
+  }
+  @media (max-width: 520px){ .wrap{ padding-left:18px; padding-right:18px; } .nav-cta .btn{ padding:9px 12px; } .guest-contact-grid{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap nav">
+    <div class="logo">libri<span>mania</span></div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#bookcase">Library</a>
+      <a href="#how">How it works</a>
+      <a href="#worlds">Our worlds</a>
+      <a href="/teacher" target="_top">Teacher’s mode</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost" data-auth="login">Log in</a>
+      <a href="#" class="btn btn-coral" data-auth="signup">Start free</a>
+      <div class="access-status" id="accessStatus">
+        <span id="accessName">Guest</span><span class="access-badge" id="accessBadge">Buyer</span>
+        <a class="dashboard-link" id="dashboardLink" href="librimania_student_dashboard_prototype.html">My dashboard</a>
+        <button class="logout-btn" id="logoutButton" type="button">Log out</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">Interactive library · B1–B2</p>
+      <h1>Everything you need to prepare for <em>your</em>&nbsp;English exam.</h1>
+      <p>Workbooks, presentation decks, an AI-graded writing trainer, and full courses — all organized by exam and topic, so you always know exactly what to open next.</p>
+      <div class="hero-actions">
+        <a href="#bookcase" class="btn btn-coral">Browse the library</a>
+        <a href="#how" class="btn btn-ghost">See how it works ↓</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="guest-contact-section" id="contact">
+  <div class="wrap">
+    <p class="eyebrow" style="color:var(--forest)">Want more support?</p>
+    <h2>Learn with Librimania your way.</h2>
+    <div class="guest-contact-grid">
+      <article class="guest-contact-card"><h3>Become my student</h3><p>Ask about individual lessons, your learning plan, and full access to all materials and trainers.</p><button class="btn btn-coral contact-trigger" data-intent="student">Contact me about lessons</button></article>
+      <article class="guest-contact-card"><h3>Monthly materials subscription</h3><p>Get ongoing access to selected trainers, practice materials, and new releases every month.</p><button class="btn btn-coral contact-trigger" data-intent="subscription">Ask about subscription</button></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE BOOKCASE — single navigation panel for the whole site ============ -->
+<section class="bookcase-section" id="bookcase">
+  <div class="wrap">
+    <div class="how-head left">
+      <p class="eyebrow">The library</p>
+      <h2>One shelf unit. Every format you make.</h2>
+    </div>
+
+    <div class="library-tools" aria-label="Library filters">
+      <input class="search-box" id="librarySearch" type="search" placeholder="Search by title, level, exam, or format…" aria-label="Search the library">
+      <div class="filter-row" id="filterRow">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="pdf">PDF</button>
+        <button class="filter-btn" data-filter="slides">Slides</button>
+        <button class="filter-btn" data-filter="course">Courses</button>
+        <button class="filter-btn" data-filter="ai-graded">AI writing</button>
+        <button class="filter-btn" data-filter="game">Games</button>
+        <button class="filter-btn" data-filter="favorite">♥ Saved</button>
+      </div>
+      <div class="library-status" id="libraryStatus" aria-live="polite"></div>
+    </div>
+
+    <button class="cabinet-open-cta" id="cabinetToggle" onclick="toggleCabinet()">
+      <span id="cabinetToggleLabel">Open the shelves</span> ↦
+    </button>
+
+    <div class="cabinet" id="cabinet">
+      <div class="bookcase-frame">
+        <div class="bookcase">
+
+        <!-- Cubby 1: Grammar Workbooks -->
+        <div class="cubby">
+          <div class="cubby-plaque"><h3>Grammar Workbooks</h3><span class="cc">04</span></div>
+          <div class="cubby-spines">
+            <a class="spine" style="--spine-color: var(--forest);" href="#" onclick="openBook(event,this)"
+               data-color="var(--forest)" data-badge="PDF" data-title="Present Simple" data-level="Journeys Vol.1 · B1 · 12 exercises"
+               data-desc="Daily routines, facts, and habits — the workbook that opens the Phil & Casey tense series.">
+              <span class="spine-badge">PDF</span>
+              <span class="spine-label">Present Simple</span>
+              <span class="spine-level">Journeys 1</span>
+            </a>
+            <a class="spine tall" style="--spine-color: var(--coral);" href="#" onclick="openBook(event,this)"
+               data-color="var(--coral)" data-badge="PDF" data-title="Past Simple" data-level="Journeys Vol.2 · B1 · 14 exercises"
+               data-desc="Regular and irregular verbs in real stories, with a full answer key.">
+              <span class="spine-badge">PDF</span>
+              <span class="spine-label">Past Simple</span>
+              <span class="spine-level">Journeys 2</span>
+            </a>
+            <a class="spine short" style="--spine-color: var(--forest-deep);" href="#" onclick="openBook(event,this)"
+               data-color="var(--forest-deep)" data-badge="PDF" data-title="Present Perfect" data-level="Journeys Vol.3 · B1 · 12 exercises"
+               data-desc="Life experience and recent events — the tense students mix up the most.">
+              <span class="spine-badge">PDF</span>
+              <span class="spine-label">Pres. Perfect</span>
+              <span class="spine-level">Journeys 3</span>
+            </a>
+            <a class="spine tall" style="--spine-color: var(--plum);" href="#" onclick="openBook(event,this)"
+               data-color="var(--plum)" data-badge="NEW" data-title="In, On &amp; Through" data-level="Haunted House Ed. · B1–B2 · 10 exercises"
+               data-desc="Every preposition of place, time, and motion — inside Blackthorn Manor.">
+              <span class="spine-badge">NEW</span>
+              <span class="spine-label">In, On &amp; Through</span>
+              <span class="spine-level">Haunted House</span>
+            </a>
+          </div>
+          <div class="cubby-foot">Grammar practice, mascot-led. <a href="#">See all →</a></div>
+        </div>
+
+        <!-- Cubby 2: Presentations -->
+        <div class="cubby cubby-light">
+          <div class="cubby-plaque"><h3>Presentations</h3><span class="cc">03</span></div>
+          <div class="cubby-spines">
+            <a class="spine short" style="--spine-color: var(--forest);" href="#" onclick="openBook(event,this)"
+               data-color="var(--forest)" data-badge="SLIDES" data-title="Tenses Explained" data-level="Canva deck"
+               data-desc="A classroom-ready slide deck covering every tense with clear visuals.">
+              <span class="spine-badge">SLIDES</span>
+              <span class="spine-label">Tenses Explained</span>
+              <span class="spine-level">Canva</span>
+            </a>
+            <a class="spine tall" style="--spine-color: var(--plum);" href="#" onclick="openBook(event,this)"
+               data-color="var(--plum)" data-badge="SLIDES" data-title="Prepositions Deck" data-level="Canva deck"
+               data-desc="Slides for teaching prepositions of place, time, and motion.">
+              <span class="spine-badge">SLIDES</span>
+              <span class="spine-label">Prepositions</span>
+              <span class="spine-level">Canva</span>
+            </a>
+            <a class="spine" style="--spine-color: var(--coral);" href="#" onclick="openBook(event,this)"
+               data-color="var(--coral)" data-badge="SLIDES" data-title="Exam Vocabulary" data-level="Canva deck"
+               data-desc="Topic vocabulary sets, ready to present in class.">
+              <span class="spine-badge">SLIDES</span>
+              <span class="spine-label">Exam Vocab</span>
+              <span class="spine-level">Canva</span>
+            </a>
+          </div>
+          <div class="cubby-foot">Classroom-ready decks. <a href="#">See all →</a></div>
+        </div>
+
+        <!-- Cubby 3: Courses -->
+        <div class="cubby">
+          <div class="cubby-plaque"><h3>Courses</h3><span class="cc">02</span></div>
+          <div class="cubby-spines">
+            <a class="spine tall" style="--spine-color: var(--forest-deep);" href="#" onclick="openBook(event,this)"
+               data-color="var(--forest-deep)" data-badge="COURSE" data-title="Grammar Foundations" data-level="B1"
+               data-desc="A structured, multi-week path through the core verb tenses.">
+              <span class="spine-badge">COURSE</span>
+              <span class="spine-label">Grammar Foundations</span>
+              <span class="spine-level">B1</span>
+            </a>
+            <a class="spine" style="--spine-color: var(--harlequin);" href="#" onclick="openBook(event,this)"
+               data-color="var(--harlequin)" data-badge="COURSE" data-title="Exam Prep Intensive" data-level="B2"
+               data-desc="A full exam-writing bootcamp across BAC, IELTS, and Cambridge.">
+              <span class="spine-badge">COURSE</span>
+              <span class="spine-label">Exam Prep Intensive</span>
+              <span class="spine-level">B2</span>
+            </a>
+          </div>
+          <div class="cubby-foot">Structured, multi-week paths. <a href="#">See all →</a></div>
+        </div>
+
+        <!-- Cubby 4: Interactive Practice (Writing Trainer + Games + Flashcards) -->
+        <div class="cubby cubby-wide">
+          <div class="cubby-plaque"><h3>Interactive Practice</h3><span class="cc">06</span></div>
+          <div class="cubby-spines">
+            <a class="spine tall" style="--spine-color: var(--forest);" href="#" onclick="openBook(event,this)"
+               data-color="var(--forest)" data-badge="AI-graded" data-title="BAC Writing" data-level="B1"
+               data-desc="Clichés, vocabulary, and AI-graded essays matched to the official BAC barem.">
+              <span class="spine-badge">AI-graded</span>
+              <span class="spine-label">BAC Writing</span>
+              <span class="spine-level">B1</span>
+            </a>
+            <a class="spine" style="--spine-color: var(--coral);" href="#" onclick="openBook(event,this)"
+               data-color="var(--coral)" data-badge="AI-graded" data-title="IELTS Writing" data-level="B2–C1"
+               data-desc="Task 2 practice with instant, criteria-based band-score feedback.">
+              <span class="spine-badge">AI-graded</span>
+              <span class="spine-label">IELTS Writing</span>
+              <span class="spine-level">B2–C1</span>
+            </a>
+            <a class="spine short" style="--spine-color: var(--plum);" href="#" onclick="openBook(event,this)"
+               data-color="var(--plum)" data-badge="AI-graded" data-title="Cambridge Writing" data-level="FCE / CAE"
+               data-desc="FCE and CAE writing tasks, graded against official Cambridge criteria.">
+              <span class="spine-badge">AI-graded</span>
+              <span class="spine-label">Cambridge</span>
+              <span class="spine-level">FCE/CAE</span>
+            </a>
+            <a class="spine tall game-case" style="--spine-color: var(--forest-deep);" href="#" onclick="openBook(event,this)"
+               data-color="var(--forest-deep)" data-badge="GAME" data-title="Egypt Expedition" data-level="Past Simple · 13 chambers · 113 verbs"
+               data-desc="A browser game hidden inside 13 ancient chambers — practice every irregular verb form as you explore.">
+              <span class="spine-badge">GAME</span>
+              <span class="game-disc"></span>
+              <span class="spine-label">Egypt Expedition</span>
+              <span class="spine-level">Past Simple</span>
+            </a>
+            <a class="spine game-case" style="--spine-color: var(--harlequin);" href="#" onclick="openBook(event,this)"
+               data-color="var(--harlequin)" data-badge="GAME" data-title="Mountain Yoga" data-level="Present Perfect · browser game"
+               data-desc="A calm, asana-based game where every pose practices a different Present Perfect pattern.">
+              <span class="spine-badge">GAME</span>
+              <span class="game-disc"></span>
+              <span class="spine-label">Mountain Yoga</span>
+              <span class="spine-level">Pres. Perfect</span>
+            </a>
+            <a class="card-box" style="--spine-color: var(--plum);" href="#" onclick="openBook(event,this)"
+               data-color="var(--plum)" data-badge="CARDS" data-title="Topic Flashcards" data-level="All tracks · vocabulary drills"
+               data-desc="Quick-fire flashcard sets for every topic — the vocabulary step of the lesson loop, on its own.">
+              <span class="card-box-label">Flashcards</span>
+            </a>
+          </div>
+          <div class="cubby-foot">Everything you do directly on the platform — writing, games, and drills. <a href="#">Start →</a></div>
+        </div>
+
+      </div>
+      </div>
+
+      <div class="cabinet-hint">Tap the doors to open</div>
+
+      <div class="cabinet-door door-left" onclick="toggleCabinet()">
+        <div class="door-glass"></div>
+        <div class="door-poster poster-worlds">
+          <div class="poster-label">Two worlds</div>
+          <div class="poster-dots">
+            <span class="poster-dot" style="background: var(--coral);"></span>
+            <span class="poster-dot" style="background: var(--plum); border:1px solid rgba(31,42,36,0.3);"></span>
+          </div>
+          <div class="poster-title">One method, two mascot pairs</div>
+          <p class="poster-text">Phil &amp; Casey teach verb tenses. Halva &amp; Willy teach prepositions inside a haunted house.</p>
+        </div>
+        <span class="door-handle"></span>
+      </div>
+
+      <div class="cabinet-door door-right" onclick="toggleCabinet()">
+        <div class="door-glass"></div>
+        <div class="door-poster poster-formats">
+          <div class="poster-label">Every format</div>
+          <div class="poster-title">Not just a trainer</div>
+          <ul class="poster-list">
+            <li>Grammar workbooks (PDF)</li>
+            <li>Presentation decks</li>
+            <li>AI-graded writing trainer</li>
+            <li>Structured courses</li>
+          </ul>
+        </div>
+        <div class="door-poster poster-exam">
+          <div class="poster-label">Built for your exam</div>
+          <div class="poster-title">Pick your track</div>
+          <div class="poster-chips">
+            <span class="poster-chip">BAC</span>
+            <span class="poster-chip">IELTS</span>
+            <span class="poster-chip">Cambridge</span>
+          </div>
+        </div>
+        <span class="door-handle"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="book-overlay" id="bookOverlay" onclick="closeBookIfBackdrop(event)">
+  <div class="book-modal" id="bookModal">
+    <div class="book-cover" id="bookCover">
+      <span class="book-cover-badge" id="bookBadge"></span>
+      <h3 id="bookTitle"></h3>
+    </div>
+    <div class="book-content">
+      <button class="book-close" onclick="closeBook()">✕</button>
+      <span class="bc-level" id="bookLevel"></span>
+      <p id="bookDesc"></p>
+      <div class="access-note" id="bookAccessNote"></div>
+      <button class="btn btn-coral" id="materialAction" type="button">Open material</button>
+      <button class="btn favorite-toggle" id="favoriteToggle" type="button">♡ Save to favorites</button>
+      <a href="#" class="btn btn-coral">Open →</a>
+    </div>
+  </div>
+</div>
+
+<div class="auth-overlay" id="authOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="auth-modal">
+    <button class="auth-close" id="authClose" aria-label="Close">×</button>
+    <h2 id="authTitle">Create your account</h2>
+    <p class="auth-subtitle" id="authSubtitle">Save progress and continue on any device.</p>
+    <form class="auth-form" id="authForm" novalidate>
+      <div class="role-picker" id="rolePicker">
+        <label class="role-option"><input type="radio" name="role" value="student"><span class="role-card"><strong>I’m a student</strong><small>Use a class code for full access.</small></span></label>
+        <label class="role-option"><input type="radio" name="role" value="buyer" checked><span class="role-card"><strong>I’m a buyer</strong><small>Create an account to buy materials.</small></span></label>
+      </div>
+      <label class="auth-field" id="nameField">Name<input id="authName" name="name" autocomplete="name" minlength="2"></label>
+      <label class="auth-field" id="emailField">Email<input id="authEmail" name="email" type="email" autocomplete="email" required></label>
+      <label class="auth-field" id="passwordField">Password<input id="authPassword" name="password" type="password" autocomplete="new-password" minlength="6" required></label>
+      <label class="auth-field student-code-field" id="studentCodeField">Student code<input id="studentCode" name="studentCode" autocomplete="off" placeholder="Enter your class code"></label>
+      <div class="auth-message" id="authMessage" aria-live="polite"></div>
+      <button class="btn btn-coral" id="authSubmit" type="submit">Create free account</button>
+      <div class="guest-divider" id="guestDivider">or</div>
+      <button class="btn guest-btn" id="guestButton" type="button">Continue as guest buyer</button>
+    </form>
+  </div>
+</div>
+
+<div class="contact-overlay" id="contactOverlay" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+  <div class="contact-modal">
+    <button class="auth-close" id="contactClose" aria-label="Close">×</button>
+    <h2 id="contactTitle">Contact Librimania</h2>
+    <p id="contactSubtitle">Tell me how I can help you.</p>
+    <form class="auth-form" id="contactForm">
+      <label class="auth-field">Your name<input id="contactName" required></label>
+      <label class="auth-field">Your email<input id="contactEmail" type="email" required></label>
+      <label class="auth-field">Message<textarea id="contactMessage" rows="4" required style="padding:11px;border:1px solid rgba(31,42,36,.22);border-radius:6px"></textarea></label>
+      <button class="btn btn-coral" type="submit">Prepare email →</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const storageKey = 'librimania-favorites';
+  let favorites = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  let currentBook = '';
+  let currentMaterial = null;
+  // Prototype adapter. Replace this array with a server request to your student database.
+  const studentRecords = [
+    { code: 'LIBRISTUDENT', name: 'Student' }
+  ];
+  async function findStudentByCode(value){
+    const normalizedCode = value.trim().toUpperCase();
+    if(location.protocol !== 'file:'){
+      try{
+        const response = await fetch('/api/student/access', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({code:normalizedCode}) });
+        if(response.ok) return (await response.json()).student;
+        return null;
+      } catch(error){ console.warn('Student database unavailable', error); }
+    }
+    return studentRecords.find(record => record.code.toUpperCase() === normalizedCode) || null;
+  }
+  const accountKey = 'librimania-account';
+  const sessionKey = 'librimania-session';
+  let accessSession = JSON.parse(localStorage.getItem(sessionKey) || 'null');
+  document.querySelectorAll('.spine, .card-box').forEach(item => item.classList.add('library-item'));
+
+  function normalize(value){ return (value || '').toLowerCase(); }
+  function applyLibraryFilters(){
+    const query = normalize(document.getElementById('librarySearch').value.trim());
+    const active = document.querySelector('.filter-btn.active').dataset.filter;
+    let shown = 0;
+    document.querySelectorAll('.library-item').forEach(item => {
+      const text = normalize([item.dataset.title, item.dataset.level, item.dataset.desc, item.dataset.badge].join(' '));
+      const matchesText = !query || text.includes(query);
+      const matchesFilter = active === 'all' || (active === 'favorite' ? favorites.includes(item.dataset.title) : normalize(item.dataset.badge).includes(active));
+      item.classList.toggle('is-hidden', !(matchesText && matchesFilter));
+      if(matchesText && matchesFilter) shown++;
+    });
+    document.getElementById('libraryStatus').textContent = shown ? `${shown} item${shown === 1 ? '' : 's'} found` : 'Nothing found — try another search or filter.';
+    document.querySelectorAll('.cubby').forEach(cubby => {
+      const items = [...cubby.querySelectorAll('.library-item')];
+      cubby.style.display = items.length && items.every(item => item.classList.contains('is-hidden')) ? 'none' : '';
+    });
+  }
+
+  document.getElementById('librarySearch').addEventListener('input', applyLibraryFilters);
+  document.getElementById('filterRow').addEventListener('click', e => {
+    const button = e.target.closest('.filter-btn');
+    if(!button) return;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    applyLibraryFilters();
+  });
+
+  function toggleCabinet(){
+    const cabinet = document.getElementById('cabinet');
+    const label = document.getElementById('cabinetToggleLabel');
+    const isOpen = cabinet.classList.toggle('is-open');
+    label.textContent = isOpen ? 'Close the shelves' : 'Open the shelves';
+  }
+
+  function openBook(e, el){
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('bookCover').style.setProperty('--book-color', el.dataset.color);
+    document.getElementById('bookBadge').textContent = el.dataset.badge || '';
+    document.getElementById('bookTitle').textContent = el.dataset.title || '';
+    document.getElementById('bookLevel').textContent = el.dataset.level || '';
+    document.getElementById('bookDesc').textContent = el.dataset.desc || '';
+    currentBook = el.dataset.title || '';
+    currentMaterial = el;
+    updateFavoriteButton();
+    updateMaterialAccess();
+    document.getElementById('bookOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeBook(){
+    document.getElementById('bookOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  function closeBookIfBackdrop(e){
+    if(e.target.id === 'bookOverlay') closeBook();
+  }
+
+  function updateFavoriteButton(){
+    const saved = favorites.includes(currentBook);
+    const button = document.getElementById('favoriteToggle');
+    button.classList.toggle('active', saved);
+    button.textContent = saved ? '♥ Saved to favorites' : '♡ Save to favorites';
+  }
+  document.getElementById('favoriteToggle').addEventListener('click', () => {
+    favorites = favorites.includes(currentBook) ? favorites.filter(title => title !== currentBook) : [...favorites, currentBook];
+    localStorage.setItem(storageKey, JSON.stringify(favorites));
+    updateFavoriteButton();
+    applyLibraryFilters();
+  });
+
+  function materialPrice(item){
+    const badge = normalize(item && item.dataset.badge);
+    if(badge.includes('course')) return 49;
+    if(badge.includes('ai-graded')) return 19;
+    if(badge.includes('slides')) return 9;
+    if(badge.includes('game')) return 12;
+    if(badge.includes('cards')) return 8;
+    return 6;
+  }
+  function updateAccessUI(){
+    const signedIn = accessSession && accessSession.role !== 'guest';
+    document.querySelectorAll('[data-auth]').forEach(el => el.style.display = signedIn ? 'none' : '');
+    const status = document.getElementById('accessStatus');
+    status.classList.toggle('active', !!signedIn);
+    if(signedIn){
+      document.getElementById('accessName').textContent = accessSession.name || accessSession.email;
+      document.getElementById('accessBadge').textContent = accessSession.role === 'student' ? 'Student · full access' : 'Buyer';
+    }
+    document.getElementById('dashboardLink').classList.toggle('active', !!(accessSession && accessSession.role === 'student'));
+    if(currentMaterial) updateMaterialAccess();
+  }
+  function updateMaterialAccess(){
+    if(!currentMaterial) return;
+    const student = accessSession && accessSession.role === 'student';
+    const note = document.getElementById('bookAccessNote');
+    const action = document.getElementById('materialAction');
+    if(student){
+      note.textContent = 'Included in your student access. Trainers are unlimited.';
+      action.textContent = 'Open material →';
+    } else {
+      const price = materialPrice(currentMaterial);
+      note.textContent = accessSession && accessSession.role === 'buyer' ? 'Available to purchase with your buyer account.' : 'Guest purchase — no account required.';
+      action.textContent = `Buy for €${price}`;
+    }
+  }
+  document.getElementById('materialAction').addEventListener('click', () => {
+    const note = document.getElementById('bookAccessNote');
+    if(accessSession && accessSession.role === 'student'){
+      note.textContent = `Opening “${currentBook}” — full student access confirmed.`;
+      return;
+    }
+    const price = materialPrice(currentMaterial);
+    note.textContent = `“${currentBook}” added to checkout (€${price}). ${accessSession && accessSession.role === 'buyer' ? 'Purchase linked to your account.' : 'Continuing as guest.'}`;
+  });
+  document.getElementById('logoutButton').addEventListener('click', () => {
+    accessSession = null;
+    localStorage.removeItem(sessionKey);
+    updateAccessUI();
+  });
+
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinks = document.getElementById('navLinks');
+  menuToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    menuToggle.setAttribute('aria-expanded', String(open));
+    menuToggle.textContent = open ? '×' : '☰';
+  });
+  navLinks.addEventListener('click', () => { navLinks.classList.remove('open'); menuToggle.setAttribute('aria-expanded','false'); menuToggle.textContent='☰'; });
+
+  const authOverlay = document.getElementById('authOverlay');
+  function openAuth(mode){
+    const login = mode === 'login';
+    document.getElementById('authTitle').textContent = login ? 'Welcome back' : 'Create your account';
+    document.getElementById('authSubtitle').textContent = login ? 'Log in to continue your learning.' : 'Save progress and continue on any device.';
+    document.getElementById('nameField').style.display = login ? 'none' : 'grid';
+    document.getElementById('rolePicker').style.display = login ? 'none' : 'grid';
+    document.getElementById('guestDivider').style.display = login ? 'none' : 'flex';
+    document.getElementById('guestButton').style.display = login ? 'none' : 'inline-flex';
+    document.getElementById('authName').required = !login;
+    document.getElementById('authPassword').autocomplete = login ? 'current-password' : 'new-password';
+    document.getElementById('authSubmit').textContent = login ? 'Log in' : 'Create free account';
+    document.getElementById('authForm').dataset.mode = mode;
+    document.getElementById('authMessage').textContent = '';
+    updateStudentCodeField();
+    authOverlay.classList.add('active');
+    document.body.style.overflow='hidden';
+    setTimeout(() => {
+      const student = !login && selectedRole() === 'student';
+      (login ? document.getElementById('authEmail') : student ? document.getElementById('studentCode') : document.getElementById('authName')).focus();
+    }, 50);
+  }
+  function closeAuth(){ authOverlay.classList.remove('active'); document.body.style.overflow=''; }
+  document.querySelectorAll('[data-auth]').forEach(link => link.addEventListener('click', e => { e.preventDefault(); openAuth(link.dataset.auth); }));
+  document.getElementById('authClose').addEventListener('click', closeAuth);
+  authOverlay.addEventListener('click', e => { if(e.target === authOverlay) closeAuth(); });
+  function selectedRole(){ return document.querySelector('input[name="role"]:checked').value; }
+  function updateStudentCodeField(){
+    const signup = document.getElementById('authForm').dataset.mode !== 'login';
+    const student = signup && selectedRole() === 'student';
+    document.getElementById('studentCodeField').classList.toggle('visible', student);
+    document.getElementById('studentCode').required = student;
+    document.getElementById('nameField').style.display = signup && !student ? 'grid' : 'none';
+    document.getElementById('emailField').style.display = student ? 'none' : 'grid';
+    document.getElementById('passwordField').style.display = student ? 'none' : 'grid';
+    document.getElementById('authName').required = signup && !student;
+    document.getElementById('authEmail').required = !student;
+    document.getElementById('authPassword').required = !student;
+    document.getElementById('authSubmit').textContent = student ? 'Enter student area' : signup ? 'Create buyer account' : 'Log in';
+    if(signup) document.getElementById('authSubtitle').textContent = student ? 'Enter the code provided by your teacher. No email or password needed.' : 'Create an account to purchase and keep your materials.';
+  }
+  document.querySelectorAll('input[name="role"]').forEach(input => input.addEventListener('change', updateStudentCodeField));
+  document.getElementById('guestButton').addEventListener('click', () => {
+    accessSession = { role:'guest', name:'Guest buyer' };
+    localStorage.setItem(sessionKey, JSON.stringify(accessSession));
+    closeAuth();
+    updateAccessUI();
+  });
+  document.getElementById('authForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const message = document.getElementById('authMessage');
+    if(!form.checkValidity()){
+      message.className='auth-message';
+      message.textContent = selectedRole() === 'student' && form.dataset.mode !== 'login' ? 'Enter your student code.' : 'Please complete all fields correctly (password: at least 6 characters).';
+      return;
+    }
+    const login = form.dataset.mode === 'login';
+    const savedAccount = JSON.parse(localStorage.getItem(accountKey) || 'null');
+    if(login){
+      if(document.getElementById('authEmail').value.trim().toLowerCase() === 'librimaniastore@gmail.com'){
+        message.className='auth-message success';
+        message.textContent='Opening your secure Teacher’s mode…';
+        setTimeout(() => { window.top.location.href = '/teacher'; }, 450);
+        return;
+      }
+      if(!savedAccount || savedAccount.email !== document.getElementById('authEmail').value.trim()){
+        message.className='auth-message';
+        message.textContent='No demo account found for this email. Please create one first.';
+        return;
+      }
+      accessSession = savedAccount;
+    } else {
+      const role = selectedRole();
+      const studentRecord = role === 'student' ? await findStudentByCode(document.getElementById('studentCode').value) : null;
+      if(role === 'student' && !studentRecord){
+        message.className='auth-message';
+        message.textContent='The student code is incorrect. Ask your teacher for the current code.';
+        return;
+      }
+      accessSession = role === 'student' ? {
+        role: 'student',
+        id: studentRecord.id || null,
+        name: studentRecord.name || 'Student'
+      } : {
+        role: 'buyer',
+        name: document.getElementById('authName').value.trim(),
+        email: document.getElementById('authEmail').value.trim()
+      };
+      if(role === 'buyer') localStorage.setItem(accountKey, JSON.stringify(accessSession));
+    }
+    localStorage.setItem(sessionKey, JSON.stringify(accessSession));
+    message.className='auth-message success';
+    message.textContent = accessSession.role === 'student' ? 'Student access activated: all materials and unlimited trainers.' : 'Buyer account ready. Materials are available to purchase.';
+    updateAccessUI();
+    setTimeout(closeAuth, 1100);
+  });
+
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Escape') return;
+    if(document.getElementById('contactOverlay').classList.contains('active')) closeContact();
+    else if(authOverlay.classList.contains('active')) closeAuth();
+    else if(document.getElementById('bookOverlay').classList.contains('active')) closeBook();
+  });
+
+  const contactOverlay = document.getElementById('contactOverlay');
+  let contactIntent = 'student';
+  document.querySelectorAll('.contact-trigger').forEach(button => button.addEventListener('click', () => {
+    contactIntent = button.dataset.intent;
+    const student = contactIntent === 'student';
+    document.getElementById('contactTitle').textContent = student ? 'Become a Librimania student' : 'Monthly materials subscription';
+    document.getElementById('contactSubtitle').textContent = student ? 'Tell me about your goals and preferred lesson schedule.' : 'Tell me which exams or trainers you are interested in.';
+    document.getElementById('contactMessage').value = student ? 'Hello! I would like to become your student. My English level and goals are: ' : 'Hello! I am interested in a monthly subscription to Librimania materials. I would like access to: ';
+    contactOverlay.classList.add('active');
+    document.body.style.overflow='hidden';
+    setTimeout(() => document.getElementById('contactName').focus(), 50);
+  }));
+  function closeContact(){ contactOverlay.classList.remove('active'); document.body.style.overflow=''; }
+  document.getElementById('contactClose').addEventListener('click', closeContact);
+  contactOverlay.addEventListener('click', event => { if(event.target === contactOverlay) closeContact(); });
+  document.getElementById('contactForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const subject = contactIntent === 'student' ? 'I want to become a Librimania student' : 'Librimania monthly subscription enquiry';
+    const body = `Name: ${document.getElementById('contactName').value}\nEmail: ${document.getElementById('contactEmail').value}\n\n${document.getElementById('contactMessage').value}`;
+    window.top.location.href = `mailto:librimaniastore@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    closeContact();
+  });
+  applyLibraryFilters();
+  updateAccessUI();
+</script>
+
+</body>
+</html>
+
